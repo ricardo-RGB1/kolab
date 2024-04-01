@@ -28,7 +28,7 @@ export const create = mutation({
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
-    
+
     if (!identity) {
       throw new Error("Not authenticated");
     }
@@ -44,6 +44,65 @@ export const create = mutation({
       authorId: identity.subject,
       authorName: identity.name!,
       imageUrl: randomImage,
+    });
+
+    return board;
+  },
+});
+
+/**
+ * Removes a board from the database.
+ * @param {string} id - The ID of the board to be removed.
+ * @throws {Error} If the user is not authenticated.
+ */
+export const remove = mutation({
+  args: { id: v.id("boards") },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+
+    if (!identity) {
+      throw new Error("Not authenticated");
+    }
+
+    // TODO  Later check to delete favorite relation as well
+
+    await ctx.db.delete(args.id);
+  },
+});
+
+
+
+
+/**
+ * Updates the title of a board.
+ *
+ * @param {string} id - The ID of the board to update.
+ * @param {string} title - The new title for the board.
+ * @returns {Promise<object>} - A promise that resolves to the updated board object.
+ * @throws {Error} - If the user is not authenticated, the title is empty, or the title is too long.
+ */
+export const update = mutation({
+  args: { id: v.id("boards"), title: v.string() },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+
+    if (!identity) {
+      throw new Error("Not authenticated");
+    }
+
+    const title = args.title.trim(); // Remove leading and trailing whitespace
+
+    if (!title) {
+      throw new Error("Title cannot be empty");
+    }
+
+    if (title.length > 60) {
+      throw new Error("Title is too long");
+    }
+
+    // Patch is used to update the title of the board.
+    const board = await ctx.db.patch(args.id, { 
+      title: args.title,
     });
 
     return board;
