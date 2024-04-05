@@ -12,9 +12,10 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { Link2, Trash2 } from "lucide-react";
+import { Link2, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "./ui/button";
+import { useRenameModal } from "@/store/use-rename-modal";
 
 interface ActionsProps {
   children: React.ReactNode;
@@ -31,6 +32,7 @@ export const Actions = ({
   id,
   title,
 }: ActionsProps) => {
+  const { onOpen } = useRenameModal(); // This is a custom hook that opens the rename modal.
   const { mutate, pending } = useApiMutation(api.board.remove);
 
   const onCopyLink = () => {
@@ -62,13 +64,23 @@ export const Actions = ({
           <Link2 className="h-4 w-4 mr-2" />
           Copy link
         </DropdownMenuItem>
-        <ConfirmModal 
-            onConfirm={onDelete}
-            header="Delete board?"
-            disabled={pending}
-            description="Are you sure you want to delete this board?"
+        <DropdownMenuItem
+          onClick={() => onOpen(id, title)}
+          className="p-3 cursor-pointer"
         >
-          <Button variant='ghost' className="p-3 cursor-pointer text-sm w-full justify-start font-normal">
+          <Pencil className="h-4 w-4 mr-2" />
+          Rename
+        </DropdownMenuItem>
+        <ConfirmModal
+          onConfirm={onDelete}
+          header="Delete board?"
+          disabled={pending}
+          description="Are you sure you want to delete this board?"
+        >
+          <Button
+            variant="ghost"
+            className="p-3 cursor-pointer text-sm w-full justify-start font-normal"
+          >
             <Trash2 className="h-4 w-4 mr-2" />
             Delete board
           </Button>

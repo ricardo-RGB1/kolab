@@ -25,9 +25,13 @@ interface BoardListProps {
  * @returns {JSX.Element} - The rendered component.
  */
 export const BoardList = ({ orgId, query }: BoardListProps) => {
-  // Fetch all boards for the given organization ID.
-  const data = useQuery(api.boards.get, { orgId });
+  // Fetch boards data using the 'get' query from the API to retrieve boards for the organization ID and search query.
+  const data = useQuery(api.boards.get, { 
+    orgId, 
+    ...query, 
+  });
 
+  
   if (data === undefined) {
     return ( 
       <div>
@@ -76,7 +80,7 @@ export const BoardList = ({ orgId, query }: BoardListProps) => {
             authorName={board.authorName}
             createdAt={board._creationTime}
             orgId={board.orgId}
-            isFavorite={false}
+            isFavorite={board.isFavorite}
           />
         ))}
       </div>

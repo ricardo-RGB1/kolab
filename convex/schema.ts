@@ -14,18 +14,22 @@ export default defineSchema({
             searchField: "title",
             filterFields: ["orgId"]
         }),
+    userFavorites: defineTable({
+        orgId: v.string(),
+        userId: v.string(),
+        boardId: v.id('boards'),
+    }) 
+      .index("by_board", ["boardId"])
+      .index("by_user_org", ["userId", "orgId"])
+      .index("by_user_board", ["userId", "boardId"])
+      .index("by_user_board_org", ["userId", "boardId", "orgId"])
 }); 
 
-// This TypeScript code is defining a database schema using the convex library: 
+// This TypeScript code is defining a database schema using the convex library:
+// 1. The schema has two tables: boards and userFavorites.
+// 2. The boards table has columns: title, orgId, authorId, authorName, and imageUrl.
+// 3. The userFavorites table has columns: orgId, userId, and boardId.
+// 4. The boards table has indexes: by_org and search_title.
+// 5. The userFavorites table has indexes: by_board, by_user_org, by_user_board, and by_user_board_org.
+// 6. The schema is exported as the default export of the file.
 
-// It imports the necessary functions from the convex library. v is used to define the types of values in the schema, defineSchema is used to define a new schema, and defineTable is used to define a new table in the schema.
-
-// It defines a new schema using defineSchema. This schema contains one table, boards.
-
-// The boards table is defined with defineTable. It has five fields: title, orgId, authorId, authorName, and imageUrl. All of these fields are strings, as indicated by v.string().
-
-// Two indexes are created on the boards table. The first index, by_org, is a simple index on the orgId field. This allows for fast lookups of boards by their orgId.
-
-// The second index, search_title, is a search index on the title field. This allows for full-text search on the title field. The filterFields option specifies that search results should be filtered by orgId.
-
-// The entire schema is exported as the default export of the module. This allows it to be imported and used in other parts of the application.

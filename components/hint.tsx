@@ -26,11 +26,11 @@ export const Hint = ({
     <TooltipProvider>
       <Tooltip delayDuration={100}>
         <TooltipTrigger asChild>{children}</TooltipTrigger>
-        <TooltipContent className="text-white bg-black border-black"
+        <TooltipContent className="text-white bg-slate-700 border-slate-700"
             side={side}
             align={align}
             sideOffset={sideOffset}
-            alignOffset={alignOffset}
+            alignOffset={alignOffset} 
         >
           <p className="font-semibold capitalize">{label}</p>
         </TooltipContent>
