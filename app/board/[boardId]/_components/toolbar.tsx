@@ -7,9 +7,11 @@ import {
   StickyNote,
   Type,
   Undo2,
+  X,
 } from "lucide-react";
 import { ToolButton } from "./tool-button";
 import { CanvasState, CanvasMode, LayerType } from "@/types/canvas";
+import { cn } from "@/lib/utils";
 
 interface ToolbarProps {
   canvasState: CanvasState; // The current state of the canvas
@@ -42,6 +44,7 @@ export const Toolbar = ({
             canvasState.mode === CanvasMode.Translating ||
             canvasState.mode === CanvasMode.Resizing ||
             canvasState.mode === CanvasMode.Pressing
+
           }
         />
         <ToolButton
@@ -95,8 +98,10 @@ export const Toolbar = ({
           }
         />
         <ToolButton
+          isDisabled={true}
           label="Pen"
           icon={Pencil}
+          iconX={X}
           onClick={() => setCanvasState({
             mode: CanvasMode.Pencil,
           })}
@@ -125,6 +130,6 @@ export const Toolbar = ({
 
 export const ToolbarSkeleton = () => {
   return (
-    <div className="absolute top-[50%] -translate-y-[50%] left-2 flex flex-col gap-y-4 bg-white h-[360px] w-[52px] shadow-md rounded-md" />
-  );
+    <div className="absolute top-[50%] -translate-y-[50%] left-2 flex flex-col gap-y-4 bg-white h-[360px] w-[52px] shadow-md rounded-md"/>
+  ); 
 };

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState, useEffect } from "react";
 import { nanoid } from "nanoid";
 import {
   useHistory,
@@ -38,6 +38,8 @@ import { LayerPreview } from "./layer-preview";
 import { SelectionBox } from "./selection-box";
 import { SelectionTools } from "./selection-tools";
 import { Path } from "./path";
+import { useDisabledScrollBounce } from "@/hooks/use-disable-scroll-bounce";
+import { useDeleteLayers } from "@/hooks/use-delete-layers";
 
 const MAX_LAYERS = 100;
 
@@ -72,6 +74,7 @@ export const Canvas = ({ boardId }: CanvasProps) => {
   const history = useHistory();
   const canRedo = useCanRedo();
   const canUndo = useCanUndo();
+  useDisabledScrollBounce(); // Disable scroll bounce effect on the body element
 
   /**
    * Inserts a new layer into the canvas.
@@ -534,6 +537,44 @@ export const Canvas = ({ boardId }: CanvasProps) => {
 
     return layerIdsToColorSelection; // Return the resulting object. Example: { "layerId1": "#FF0000", "layerId2": "#00FF00" }
   }, [selections]);
+
+
+  // Add the deleteLayers hook
+  const deleteLayers = useDeleteLayers(); 
+
+  // This useEffect hook is used to set up a keyboard event listener.
+  useEffect(() => {
+    // This function is the event handler for the 'keydown' event.
+    function onKeyDown(e: KeyboardEvent) {
+      switch (e.key) {
+        case "z": {
+          // If the 'z' key is pressed along with either the control key or the meta key, it triggers an undo or redo action.
+          if (e.ctrlKey || e.metaKey) {
+            if (e.shiftKey) {
+              // If the shift key is also pressed, it triggers a redo action.
+              history.redo();
+            } else {
+              // If the shift key is not pressed, it triggers an undo action.
+              history.undo();
+            }
+            break; 
+          }
+        }
+      }
+    }
+
+    // The 'keydown' event listener is added to the document.
+    // Whenever a key is pressed, the onKeyDown function is called.
+    document.addEventListener("keydown", onKeyDown);
+
+    // The cleanup function removes the 'keydown' event listener when the component is unmounted.
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+    };
+
+    // The useEffect hook will re-run whenever the 'deleteLayers' or 'history' props change.
+  }, [deleteLayers, history]); 
+
 
   return (
     <main className="h-full  w-full relative bg-neutral-100 touch-none">
