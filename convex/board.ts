@@ -2,6 +2,8 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
+const ORG_BOARD_LIMIT = 2; // The maximum number of boards per organization
+
 const images = [
   "/placeholders/1.svg",
   "/placeholders/2.svg",
@@ -35,6 +37,22 @@ export const create = mutation({
     }
     // Get a random image from images array:
     const randomImage = images[Math.floor(Math.random() * images.length)];
+
+
+
+    /**
+     * Retrieves existing boards for the specified organization.
+     *
+     * @returns {Promise<Array<Board>>} A promise that resolves to an array of boards.
+     */
+    const existingBoards = await ctx.db
+      .query("boards")
+      .withIndex("by_org", (q) => q.eq("orgId", args.orgId)) // Get all boards for the organization
+      .collect();// Collect all boards
+
+    if (existingBoards.length >= ORG_BOARD_LIMIT) {
+      throw new Error("Organization has reached the maximum number of boards");
+    }
 
     /**
      * Inserts a new board into the database.
