@@ -4,6 +4,11 @@ import { useStorage } from "@/liveblocks.config";
 import { LayerType } from "@/types/canvas";
 import { memo } from "react";
 import { Rectangle } from "./rectangle";
+import { Ellipse } from "./ellipse";
+import { Text } from "./text";
+import { Note } from "./note";
+import { Path } from "./path";
+import { colorToCss } from "@/lib/utils";
 
 interface LayerPreviewProps {
   id: string;
@@ -11,18 +16,65 @@ interface LayerPreviewProps {
   selectionColor?: string; // The color of the selection border
 }
 
+/**
+ * Renders a preview of a layer.
+ * @param id - The ID of the layer.
+ * @param onLayerPointerDown - The event handler for layer pointer down event.
+ * @param selectionColor - The color of the selection.
+ * @returns The rendered layer preview component.
+ */
 export const LayerPreview = memo(
   ({ id, onLayerPointerDown, selectionColor }: LayerPreviewProps) => {
     // Get the layer from the storage
-    const layer = useStorage((root) => root.layers.get(id));
+    const layer = useStorage((root) => root.layers.get(id)); 
 
-    console.log({layer}, 'LAYER_PREVIEW')
+   
 
     if (!layer) {
       return null;
     }
 
-    switch (layer.type) { // Render the layer based on its type
+    // Render the layer based on its type
+    switch (layer.type) { 
+      case LayerType.Path: 
+        return (
+          <Path 
+            key={id}
+            points={layer.points}
+            onPointerDown={(e) => onLayerPointerDown(e, id)}
+            x={layer.x}
+            y={layer.y}
+            fill={layer.fill ? colorToCss(layer.fill) : "#000"}
+            stroke={selectionColor}
+          />
+        )
+      case LayerType.Note:
+        return (
+          <Note
+            id={id}
+            layer={layer}
+            onPointerDown={onLayerPointerDown}
+            selectionColor={selectionColor}
+          />
+        );
+      case LayerType.Text:
+        return (
+          <Text
+            id={id}
+            layer={layer}
+            onPointerDown={onLayerPointerDown}
+            selectionColor={selectionColor}
+          />
+        );
+      case LayerType.Ellipse:
+        return (
+          <Ellipse
+            id={id}
+            layer={layer}
+            onPointerDown={onLayerPointerDown}
+            selectionColor={selectionColor}
+          />
+        );
       case LayerType.Rectangle:
         return (
           <Rectangle

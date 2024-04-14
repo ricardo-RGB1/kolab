@@ -117,7 +117,7 @@ export type CanvasState =
     }
   | {
       mode: CanvasMode.Pressing,
-      origing: Point;
+      origin: Point;
     };
 
 /**
