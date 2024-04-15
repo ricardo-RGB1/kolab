@@ -6,6 +6,7 @@ import { api } from "@/convex/_generated/api";
 import { Plus } from "lucide-react";
 import { useApiMutation } from "@/hooks/use-api-mutation";
 import { useRouter } from "next/navigation";
+import { useProModal } from "@/store/use-pro-modal";
 
 interface NewBoardButtonProps {
   orgId: string;
@@ -15,6 +16,7 @@ interface NewBoardButtonProps {
 export const NewBoardButton = ({ orgId, disabled }: NewBoardButtonProps) => {
   const router = useRouter();
   const { mutate, pending } = useApiMutation(api.board.create);
+  const { onOpen } = useProModal();
 
   const onClick = () => {
     mutate({ orgId, title: "New board" })
@@ -22,7 +24,10 @@ export const NewBoardButton = ({ orgId, disabled }: NewBoardButtonProps) => {
         toast.success("Board created!");
         router.push(`/board/${id}`);
       })
-      .catch(() => toast.error("Failed to create board"));
+      .catch(() => {
+        toast.error("Failed to create board");
+        onOpen();
+      });
   };
 
   return (
@@ -31,7 +36,8 @@ export const NewBoardButton = ({ orgId, disabled }: NewBoardButtonProps) => {
       onClick={onClick}
       className={cn(
         "col-span-1 aspect-[100/127] bg-yellow-200 rounded-lg hover:bg-yellow-400 flex flex-col items-center justify-center py-6",
-        (pending || disabled) && "opacity-75 hover:bg-yellow-200 cursor-not-allowed"
+        (pending || disabled) &&
+          "opacity-75 hover:bg-yellow-200 cursor-not-allowed"
       )}
     >
       <div />

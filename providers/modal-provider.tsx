@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 
 import { RenameModal } from "@/components/modals/rename-modal";
+import { ProModal } from "@/components/modals/pro-modal";
 
 /**
  * Provides a modal component that solves for hydration mismatch errors in Next.js.
@@ -23,6 +24,10 @@ export const ModalProvider = () => {
     return (
         <>
             <RenameModal />
+            <ProModal />
         </>
     );
 };
+
+
+// REMEMBER: When programmtically opening the modal with zustand, it will cause hydration mismatch errors in Next.js. Therefore, it is important to create a modal provider to handle the modal state.

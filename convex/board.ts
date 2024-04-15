@@ -47,12 +47,13 @@ export const create = mutation({
      */
     const existingBoards = await ctx.db
       .query("boards")
-      .withIndex("by_org", (q) => q.eq("orgId", args.orgId)) // Get all boards for the organization
+      .withIndex("by_org", (q) => q.eq("orgId", args.orgId))
       .collect();// Collect all boards
 
     if (existingBoards.length >= ORG_BOARD_LIMIT) {
       throw new Error("Organization has reached the maximum number of boards");
     }
+
 
     /**
      * Inserts a new board into the database.
