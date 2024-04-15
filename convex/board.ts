@@ -1,4 +1,3 @@
-
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
@@ -40,6 +39,18 @@ export const create = mutation({
 
 
 
+    // Check if the organization has an active subscription
+    const orgSubscription = await ctx.db 
+      .query("orgSubscription")
+      .withIndex("by_org", (q) => q.eq("orgId", args.orgId))
+      .unique(); // unique() returns the first item in the result set
+
+    // Get the current period end date of the subscription
+    const periodEnd = orgSubscription?.stripeCurrentPeriodEnd;
+    // Check if the subscription is active
+    const isSubscribed = periodEnd && periodEnd > Date.now();
+
+
     /**
      * Retrieves existing boards for the specified organization.
      *
@@ -48,12 +59,14 @@ export const create = mutation({
     const existingBoards = await ctx.db
       .query("boards")
       .withIndex("by_org", (q) => q.eq("orgId", args.orgId))
-      .collect();// Collect all boards
+      .collect(); // Collect all boards
 
-    if (existingBoards.length >= ORG_BOARD_LIMIT) {
+    // Check if the organization has reached the maximum number of boards
+    if (!isSubscribed &&
+        existingBoards.length >= ORG_BOARD_LIMIT
+        ) {
       throw new Error("Organization has reached the maximum number of boards");
     }
-
 
     /**
      * Inserts a new board into the database.
@@ -84,7 +97,7 @@ export const remove = mutation({
       throw new Error("Not authenticated");
     }
 
-    const userId = identity.subject; 
+    const userId = identity.subject;
 
     /**
      * Represents an existing favorite for a user and a board.
@@ -92,17 +105,14 @@ export const remove = mutation({
     const existingFavorite = await ctx.db
       .query("userFavorites")
       .withIndex("by_user_board", (q) =>
-        q
-        .eq("userId", userId)
-        .eq("boardId", args.id)
+        q.eq("userId", userId).eq("boardId", args.id)
       )
       .unique();
 
-      
-      if (existingFavorite) { // If the favorite exists, delete it
-        await ctx.db.delete(existingFavorite._id);
-      }
-
+    if (existingFavorite) {
+      // If the favorite exists, delete it
+      await ctx.db.delete(existingFavorite._id);
+    }
 
     await ctx.db.delete(args.id);
   },
@@ -144,12 +154,9 @@ export const update = mutation({
   },
 });
 
-
-
-
 /**
  * Mutation to mark a board as favorite for a user.
- * 
+ *
  * @param {string} id - The ID of the board.
  * @param {string} orgId - The ID of the organization.
  * @returns {Promise<Board>} - The updated board.
@@ -178,9 +185,7 @@ export const favorite = mutation({
     const existingFavorite = await ctx.db
       .query("userFavorites")
       .withIndex("by_user_board", (q) =>
-        q
-        .eq("userId", userId)
-        .eq("boardId", board._id)
+        q.eq("userId", userId).eq("boardId", board._id)
       )
       .unique();
 
@@ -192,7 +197,7 @@ export const favorite = mutation({
      * Inserts a new favorite into the database.
      */
     await ctx.db.insert("userFavorites", {
-      userId, 
+      userId,
       boardId: board._id,
       orgId: args.orgId,
     });
@@ -200,7 +205,6 @@ export const favorite = mutation({
     return board;
   },
 });
-
 
 /**
  * Removes a board from favorites.
@@ -232,9 +236,7 @@ export const unfavorite = mutation({
     const existingFavorite = await ctx.db
       .query("userFavorites")
       .withIndex("by_user_board", (q) =>
-        q
-        .eq("userId", userId)
-        .eq("boardId", board._id)
+        q.eq("userId", userId).eq("boardId", board._id)
       )
       .unique();
 
@@ -244,13 +246,11 @@ export const unfavorite = mutation({
     }
 
     // Delete the favorite from the database
-    await ctx.db.delete(existingFavorite._id)
+    await ctx.db.delete(existingFavorite._id);
 
     return board;
   },
 });
-
-
 
 /**
  * Retrieves a board from the database based on the provided ID.
@@ -259,17 +259,12 @@ export const unfavorite = mutation({
  */
 export const get = query({
   args: { id: v.id("boards") },
-  handler: async (ctx, args) => { 
+  handler: async (ctx, args) => {
     const board = ctx.db.get(args.id);
 
     return board; // Return the board
-  }
-})
-
-
-
-
-
+  },
+});
 
 // mutation: A function that represents a mutation. It takes two arguments: args and handler.
 // args: The arguments that the query function accepts.
